@@ -1077,6 +1077,29 @@
         ]
       }
     },
+    "/v1/getconfiginfo": {
+      "get": {
+        "summary": "lncli: `getconfiginfo`\nGetConfigInfo returns configuration information about the running\nLND node. This includes details about the database backend and\nother operational settings.",
+        "operationId": "Lightning_GetConfigInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/lnrpcGetConfigInfoResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "Lightning"
+        ]
+      }
+    },
     "/v1/getdebuginfo": {
       "get": {
         "summary": "lncli: 'getdebuginfo'\nGetDebugInfo returns debug information concerning the state of the daemon\nand its subsystems. This includes the full configuration and the latest log\nentries from the log file.",
@@ -5450,6 +5473,19 @@
         "psbt_finalize": {
           "$ref": "#/definitions/lnrpcFundingPsbtFinalize",
           "description": "Used to continue a funding flow that was initiated to be executed\nthrough a PSBT. This step finalizes the funded and signed PSBT, finishes\nnegotiation with the peer and finally publishes the resulting funding\ntransaction."
+        }
+      }
+    },
+    "lnrpcGetConfigInfoResponse": {
+      "type": "object",
+      "properties": {
+        "db_backend": {
+          "type": "string",
+          "description": "The database backend currently in use (e.g. bolt, postgres,\nsqlite, etcd)."
+        },
+        "native_sql": {
+          "type": "boolean",
+          "description": "Whether native SQL is enabled for supported database\noperations."
         }
       }
     },

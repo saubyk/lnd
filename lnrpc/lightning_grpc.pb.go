@@ -112,6 +112,11 @@ type LightningClient interface {
 	// whether it's in a recovery mode, whether the recovery is finished, and the
 	// progress made so far.
 	GetRecoveryInfo(ctx context.Context, in *GetRecoveryInfoRequest, opts ...grpc.CallOption) (*GetRecoveryInfoResponse, error)
+	// lncli: `getconfiginfo`
+	// GetConfigInfo returns configuration information about the running
+	// LND node. This includes details about the database backend and
+	// other operational settings.
+	GetConfigInfo(ctx context.Context, in *GetConfigInfoRequest, opts ...grpc.CallOption) (*GetConfigInfoResponse, error)
 	// lncli: `pendingchannels`
 	// PendingChannels returns a list of all the channels that are currently
 	// considered "pending". A channel is pending if it has finished the funding
@@ -644,6 +649,15 @@ func (c *lightningClient) GetDebugInfo(ctx context.Context, in *GetDebugInfoRequ
 func (c *lightningClient) GetRecoveryInfo(ctx context.Context, in *GetRecoveryInfoRequest, opts ...grpc.CallOption) (*GetRecoveryInfoResponse, error) {
 	out := new(GetRecoveryInfoResponse)
 	err := c.cc.Invoke(ctx, "/lnrpc.Lightning/GetRecoveryInfo", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *lightningClient) GetConfigInfo(ctx context.Context, in *GetConfigInfoRequest, opts ...grpc.CallOption) (*GetConfigInfoResponse, error) {
+	out := new(GetConfigInfoResponse)
+	err := c.cc.Invoke(ctx, "/lnrpc.Lightning/GetConfigInfo", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -1501,6 +1515,11 @@ type LightningServer interface {
 	// whether it's in a recovery mode, whether the recovery is finished, and the
 	// progress made so far.
 	GetRecoveryInfo(context.Context, *GetRecoveryInfoRequest) (*GetRecoveryInfoResponse, error)
+	// lncli: `getconfiginfo`
+	// GetConfigInfo returns configuration information about the running
+	// LND node. This includes details about the database backend and
+	// other operational settings.
+	GetConfigInfo(context.Context, *GetConfigInfoRequest) (*GetConfigInfoResponse, error)
 	// lncli: `pendingchannels`
 	// PendingChannels returns a list of all the channels that are currently
 	// considered "pending". A channel is pending if it has finished the funding
@@ -1881,6 +1900,9 @@ func (UnimplementedLightningServer) GetDebugInfo(context.Context, *GetDebugInfoR
 }
 func (UnimplementedLightningServer) GetRecoveryInfo(context.Context, *GetRecoveryInfoRequest) (*GetRecoveryInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRecoveryInfo not implemented")
+}
+func (UnimplementedLightningServer) GetConfigInfo(context.Context, *GetConfigInfoRequest) (*GetConfigInfoResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfigInfo not implemented")
 }
 func (UnimplementedLightningServer) PendingChannels(context.Context, *PendingChannelsRequest) (*PendingChannelsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PendingChannels not implemented")
@@ -2380,6 +2402,24 @@ func _Lightning_GetRecoveryInfo_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(LightningServer).GetRecoveryInfo(ctx, req.(*GetRecoveryInfoRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Lightning_GetConfigInfo_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigInfoRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LightningServer).GetConfigInfo(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/lnrpc.Lightning/GetConfigInfo",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LightningServer).GetConfigInfo(ctx, req.(*GetConfigInfoRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -3464,6 +3504,10 @@ var Lightning_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetRecoveryInfo",
 			Handler:    _Lightning_GetRecoveryInfo_Handler,
+		},
+		{
+			MethodName: "GetConfigInfo",
+			Handler:    _Lightning_GetConfigInfo_Handler,
 		},
 		{
 			MethodName: "PendingChannels",
