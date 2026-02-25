@@ -99,10 +99,18 @@
   specify a list of inputs to use as transaction inputs via the new
   `inputs` field in `EstimateFeeRequest`.
 
+* A new [`GetConfigInfo`
+](https://github.com/lightningnetwork/lnd/pull/10608) RPC has been added that
+  returns configuration information about the running LND node including the
+  database backend in use and whether native SQL is enabled.
+
 ## lncli Additions
 
 * The `estimatefee` command now supports the `--utxos` flag to specify explicit
   inputs for fee estimation.
+
+* A new `getconfiginfo` command has been added to display
+  configuration information about the running daemon.
 
 # Improvements
 ## Functional Updates
