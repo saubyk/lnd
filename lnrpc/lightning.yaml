@@ -48,6 +48,8 @@ http:
       get: "/v1/getdebuginfo"
     - selector: lnrpc.Lightning.GetRecoveryInfo
       get: "/v1/getrecoveryinfo"
+    - selector: lnrpc.Lightning.GetConfigInfo
+      get: "/v1/getconfiginfo"
     - selector: lnrpc.Lightning.PendingChannels
       get: "/v1/channels/pending"
     - selector: lnrpc.Lightning.ListChannels

@@ -158,6 +158,13 @@ service Lightning {
     rpc GetRecoveryInfo (GetRecoveryInfoRequest)
         returns (GetRecoveryInfoResponse);
 
+    /* lncli: `getconfiginfo`
+    GetConfigInfo returns configuration information about the running
+    LND node. This includes details about the database backend and
+    other operational settings.
+    */
+    rpc GetConfigInfo (GetConfigInfoRequest) returns (GetConfigInfoResponse);
+
     // TODO(roasbeef): merge with below with bool?
     /* lncli: `pendingchannels`
     PendingChannels returns a list of all the channels that are currently
@@ -2143,6 +2150,19 @@ message GetRecoveryInfoResponse {
 
     // The recovery progress, ranging from 0 to 1.
     double progress = 3;
+}
+
+message GetConfigInfoRequest {
+}
+
+message GetConfigInfoResponse {
+    // The database backend currently in use (e.g. bolt, postgres,
+    // sqlite, etcd).
+    string db_backend = 1;
+
+    // Whether native SQL is enabled for supported database
+    // operations.
+    bool native_sql = 2;
 }
 
 message Chain {
