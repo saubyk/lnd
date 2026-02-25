@@ -1795,6 +1795,28 @@ func getRecoveryInfo(ctx *cli.Context) error {
 	return nil
 }
 
+var getConfigInfoCommand = cli.Command{
+	Name:   "getconfiginfo",
+	Usage:  "Returns configuration information of the running daemon.",
+	Action: actionDecorator(getConfigInfo),
+}
+
+func getConfigInfo(ctx *cli.Context) error {
+	ctxc := getContext()
+	client, cleanUp := getClient(ctx)
+	defer cleanUp()
+
+	req := &lnrpc.GetConfigInfoRequest{}
+	resp, err := client.GetConfigInfo(ctxc, req)
+	if err != nil {
+		return err
+	}
+
+	printRespJSON(resp)
+
+	return nil
+}
+
 var pendingChannelsCommand = cli.Command{
 	Name:     "pendingchannels",
 	Category: "Channels",
