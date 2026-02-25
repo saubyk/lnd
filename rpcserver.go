@@ -366,6 +366,10 @@ func MainRPCServerPermissions() map[string][]bakery.Op {
 			Entity: "info",
 			Action: "read",
 		}},
+		"/lnrpc.Lightning/GetConfigInfo": {{
+			Entity: "info",
+			Action: "read",
+		}},
 		"/lnrpc.Lightning/ListPeers": {{
 			Entity: "peers",
 			Action: "read",
@@ -3499,6 +3503,16 @@ func (r *rpcServer) GetRecoveryInfo(ctx context.Context,
 		RecoveryMode:     isRecoveryMode,
 		RecoveryFinished: progress == 1,
 		Progress:         progress,
+	}, nil
+}
+
+// GetConfigInfo returns configuration information about the running LND node.
+func (r *rpcServer) GetConfigInfo(_ context.Context,
+	_ *lnrpc.GetConfigInfoRequest) (*lnrpc.GetConfigInfoResponse, error) {
+
+	return &lnrpc.GetConfigInfoResponse{
+		DbBackend: r.cfg.DB.Backend,
+		NativeSql: r.cfg.DB.UseNativeSQL,
 	}, nil
 }
 
