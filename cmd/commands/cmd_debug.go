@@ -23,6 +23,14 @@ var getDebugInfoCommand = cli.Command{
 	Category: "Debug",
 	Usage:    "Returns debug information related to the active daemon.",
 	Action:   actionDecorator(getDebugInfo),
+	Flags: []cli.Flag{
+		cli.BoolFlag{
+			Name: "config_only",
+			Usage: "if set, only the config information " +
+				"is returned, skipping the log file " +
+				"content",
+		},
+	},
 }
 
 func getDebugInfo(ctx *cli.Context) error {
@@ -30,7 +38,9 @@ func getDebugInfo(ctx *cli.Context) error {
 	client, cleanUp := getClient(ctx)
 	defer cleanUp()
 
-	req := &lnrpc.GetDebugInfoRequest{}
+	req := &lnrpc.GetDebugInfoRequest{
+		ConfigOnly: ctx.Bool("config_only"),
+	}
 	resp, err := client.GetDebugInfo(ctxc, req)
 	if err != nil {
 		return err
