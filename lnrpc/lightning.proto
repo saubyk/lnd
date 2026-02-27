@@ -2125,6 +2125,9 @@ message GetInfoResponse {
 }
 
 message GetDebugInfoRequest {
+    // If set to true, only the config information will be returned, skipping
+    // the log file content which can be large.
+    bool config_only = 1;
 }
 
 message GetDebugInfoResponse {

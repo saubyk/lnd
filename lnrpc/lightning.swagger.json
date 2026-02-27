@@ -1095,6 +1095,15 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "config_only",
+            "description": "If set to true, only the config information will be returned, skipping\nthe log file content which can be large.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          }
+        ],
         "tags": [
           "Lightning"
         ]
