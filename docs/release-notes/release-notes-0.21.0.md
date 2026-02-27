@@ -133,7 +133,16 @@
   events](https://github.com/lightningnetwork/lnd/pull/10543) to be able to
   subscribe to state changes.
 
+* The [`GetDebugInfo`](https://github.com/lightningnetwork/lnd/pull/10613) RPC
+request now accepts a `config_only` flag. When set to `true`, only the
+configuration map is returned and the log file is not read,
+making the call significantly faster.
+
 ## lncli Updates
+
+* The `getdebuginfo` command now supports a `--config_only` flag. When set, only
+  the daemon's configuration is returned, skipping the log file content. This
+  makes it faster and produces cleaner output when only the config is needed.
 
 ## Breaking Changes
 
