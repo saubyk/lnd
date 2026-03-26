@@ -1,6 +1,8 @@
 package itest
 
 import (
+	"bytes"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/btcsuite/btcd/btcutil"
@@ -97,6 +99,14 @@ func testBumpFeeLowBudget(ht *lntest.HarnessTest) {
 		if sweepTx.TxHash() == tx.TxHash() {
 			sweepTx = txns[1]
 		}
+
+		// Validate that the raw tx hex is populated and matches the
+		// sweep transaction.
+		require.NotEmpty(ht, pendingSweep.RawTxHex)
+		var expectedBuf bytes.Buffer
+		require.NoError(ht, sweepTx.Serialize(&expectedBuf))
+		expectedHex := hex.EncodeToString(expectedBuf.Bytes())
+		require.Equal(ht, expectedHex, pendingSweep.RawTxHex)
 
 		return sweepTx
 	}
@@ -300,6 +310,15 @@ func runBumpFee(ht *lntest.HarnessTest, alice *node.HarnessNode) {
 		if sweepTx.TxHash() == tx.TxHash() {
 			sweepTx = txns[1]
 		}
+
+		// Validate that the raw tx hex is populated and matches the
+		// sweep transaction.
+		ps := ht.AssertNumPendingSweeps(alice, 1)[0]
+		require.NotEmpty(ht, ps.RawTxHex)
+		var expectedBuf bytes.Buffer
+		require.NoError(ht, sweepTx.Serialize(&expectedBuf))
+		expectedHex := hex.EncodeToString(expectedBuf.Bytes())
+		require.Equal(ht, expectedHex, ps.RawTxHex)
 
 		return sweepTx
 	}
