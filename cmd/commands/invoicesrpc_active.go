@@ -145,12 +145,17 @@ var addHoldInvoiceCommand = cli.Command{
 	Category: "Invoices",
 	Usage:    "Add a new hold invoice.",
 	Description: `
-	Add a new invoice, expressing intent for a future payment.
+	Add a new hold invoice, expressing intent for a future payment.
 
 	Invoices without an amount can be created by not supplying any
 	parameters or providing an amount of 0. These invoices allow the payer
-	to specify the amount of satoshis they wish to send.`,
-	ArgsUsage: "hash [amt]",
+	to specify the amount of satoshis they wish to send.
+
+	The hash can be provided as the first positional argument (legacy) or
+	via the --hash flag. If neither hash nor preimage is provided, the
+	server will auto-generate a random preimage and derive the hash.
+	When --preimage is provided, the server derives the hash from it.`,
+	ArgsUsage: "[hash] [amt]",
 	Flags: []cli.Flag{
 		cli.StringFlag{
 			Name: "memo",
@@ -198,6 +203,20 @@ var addHoldInvoiceCommand = cli.Command{
 				"private channels in order to assist the " +
 				"payer in reaching you",
 		},
+		cli.StringFlag{
+			Name: "hash",
+			Usage: "the hash of the preimage (32 bytes, hex " +
+				"encoded). If not set, and --preimage is " +
+				"not set, a random preimage and hash " +
+				"will be generated.",
+		},
+		cli.StringFlag{
+			Name: "preimage",
+			Usage: "a user-supplied preimage (32 bytes, hex " +
+				"encoded). The server will derive the " +
+				"hash from it. Cannot be used together " +
+				"with --hash.",
+		},
 	},
 	Action: actionDecorator(addHoldInvoice),
 }
@@ -205,6 +224,10 @@ var addHoldInvoiceCommand = cli.Command{
 func addHoldInvoice(ctx *cli.Context) error {
 	var (
 		descHash []byte
+		hash     []byte
+		preimage []byte
+		amt      int64
+		amtMsat  int64
 		err      error
 	)
 
@@ -213,26 +236,48 @@ func addHoldInvoice(ctx *cli.Context) error {
 	defer cleanUp()
 
 	args := ctx.Args()
-	if ctx.NArg() == 0 {
-		cli.ShowCommandHelp(ctx, "addholdinvoice")
-		return nil
+
+	switch {
+	// --hash flag takes priority.
+	case ctx.IsSet("hash"):
+		hash, err = hex.DecodeString(ctx.String("hash"))
+		if err != nil {
+			return fmt.Errorf("unable to parse hash: %w", err)
+		}
+
+	// If the first positional arg looks like a hex-encoded hash
+	// (64 hex chars = 32 bytes), use it for backward compatibility.
+	case args.Present() && len(args.First()) == 64:
+		hash, err = hex.DecodeString(args.First())
+		if err != nil {
+			return fmt.Errorf("unable to parse hash: %w", err)
+		}
+		args = args.Tail()
 	}
 
-	hash, err := hex.DecodeString(args.First())
-	if err != nil {
-		return fmt.Errorf("unable to parse hash: %w", err)
+	// Parse preimage if provided via flag.
+	if ctx.IsSet("preimage") {
+		preimageHex := ctx.String("preimage")
+		if len(preimageHex) != 64 {
+			return fmt.Errorf("preimage must be 64 hex " +
+				"characters (32 bytes)")
+		}
+
+		preimage, err = hex.DecodeString(preimageHex)
+		if err != nil {
+			return fmt.Errorf("unable to parse preimage: %w",
+				err)
+		}
 	}
 
-	args = args.Tail()
-
-	amt := ctx.Int64("amt")
-	amtMsat := ctx.Int64("amt_msat")
+	amt = ctx.Int64("amt")
+	amtMsat = ctx.Int64("amt_msat")
 
 	if !ctx.IsSet("amt") && !ctx.IsSet("amt_msat") && args.Present() {
 		amt, err = strconv.ParseInt(args.First(), 10, 64)
 		if err != nil {
-			return fmt.Errorf("unable to decode amt argument: %w",
-				err)
+			return fmt.Errorf("unable to decode amt argument: "+
+				"%w", err)
 		}
 	}
 
@@ -251,6 +296,7 @@ func addHoldInvoice(ctx *cli.Context) error {
 		Expiry:          ctx.Int64("expiry"),
 		CltvExpiry:      ctx.Uint64("cltv_expiry_delta"),
 		Private:         ctx.Bool("private"),
+		Preimage:        preimage,
 	}
 
 	resp, err := client.AddHoldInvoice(ctxc, invoice)
