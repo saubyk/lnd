@@ -282,7 +282,7 @@
         "hash": {
           "type": "string",
           "format": "byte",
-          "title": "The hash of the preimage"
+          "description": "The hash of the preimage. When creating a hold invoice, the hash is\noptional. If neither hash nor preimage is provided, the server will\ngenerate a random preimage and derive the hash automatically."
         },
         "value": {
           "type": "string",
@@ -326,6 +326,11 @@
         "private": {
           "type": "boolean",
           "description": "Whether this invoice should include routing hints for private channels."
+        },
+        "preimage": {
+          "type": "string",
+          "format": "byte",
+          "description": "An optional preimage (32 bytes). If provided, the server will validate\nits length and derive the payment hash from it, ignoring the hash field.\nIf neither preimage nor hash is provided, the server generates a random\npreimage and derives the hash automatically. This cannot be set at the\nsame time as hash."
         }
       }
     },
@@ -345,6 +350,16 @@
           "type": "string",
           "format": "byte",
           "description": "The payment address of the generated invoice. This is also called\nthe payment secret in specifications (e.g. BOLT 11). This value should\nbe used in all payments for this invoice as we require it for end to end\nsecurity."
+        },
+        "payment_preimage": {
+          "type": "string",
+          "format": "byte",
+          "description": "The preimage for this invoice. This is populated when the server\ngenerated the preimage (neither hash nor preimage was provided in\nthe request) or when the caller provided a preimage. It is empty\nwhen only a hash was provided, since the server does not know the\npreimage in that case."
+        },
+        "payment_hash": {
+          "type": "string",
+          "format": "byte",
+          "description": "The payment hash for this invoice. Always populated."
         }
       }
     },

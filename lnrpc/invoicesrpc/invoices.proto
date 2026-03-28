@@ -87,7 +87,11 @@ message AddHoldInvoiceRequest {
     */
     string memo = 1;
 
-    // The hash of the preimage
+    /*
+    The hash of the preimage. When creating a hold invoice, the hash is
+    optional. If neither hash nor preimage is provided, the server will
+    generate a random preimage and derive the hash automatically.
+    */
     bytes hash = 2;
 
     /*
@@ -128,6 +132,15 @@ message AddHoldInvoiceRequest {
 
     // Whether this invoice should include routing hints for private channels.
     bool private = 9;
+
+    /*
+    An optional preimage (32 bytes). If provided, the server will validate
+    its length and derive the payment hash from it, ignoring the hash field.
+    If neither preimage nor hash is provided, the server generates a random
+    preimage and derives the hash automatically. This cannot be set at the
+    same time as hash.
+    */
+    bytes preimage = 11;
 }
 
 message AddHoldInvoiceResp {
@@ -153,6 +166,20 @@ message AddHoldInvoiceResp {
     security.
     */
     bytes payment_addr = 3;
+
+    /*
+    The preimage for this invoice. This is populated when the server
+    generated the preimage (neither hash nor preimage was provided in
+    the request) or when the caller provided a preimage. It is empty
+    when only a hash was provided, since the server does not know the
+    preimage in that case.
+    */
+    bytes payment_preimage = 4;
+
+    /*
+    The payment hash for this invoice. Always populated.
+    */
+    bytes payment_hash = 5;
 }
 
 message SettleInvoiceMsg {
